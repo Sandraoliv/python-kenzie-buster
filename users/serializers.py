@@ -27,4 +27,8 @@ class UserSerializer(serializers.Serializer):
     def create(self, validated_data: dict) -> User:
         if validated_data["is_employee"]:
             return User.objects.create_superuser(**validated_data)  
-        return User.objects.create_user(**validated_data)    
+        return User.objects.create_user(**validated_data) 
+
+    class LoginSerializer(serializers.Serializer):
+        username = serializers.CharField(max_length=50, write_only=True)
+        password = serializers.CharField(max_length=120, write_only=True)   

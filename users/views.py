@@ -2,6 +2,10 @@ from django.shortcuts import render
 from rest_framework.views import APIView, Request, Response, status
 from .models import User
 from .serializers import UserSerializer
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class UsersView(APIView):
