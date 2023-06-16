@@ -2,6 +2,7 @@ from rest_framework.views import APIView, Request, Response, status
 from movies.serializers import MovieSerializer, MovieOrderSerializer
 from movies.models import Movie
 from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import (
     IsAdminUser,
@@ -12,16 +13,17 @@ from rest_framework.permissions import (
 from users.permissions import EmployeePermissionOrReadOnly
 
 
-class MoviesView(APIView):
+class MoviesView(APIView, PageNumberPagination):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser | EmployeePermissionOrReadOnly]
-
+  
     def get(self, request: Request) -> Response:
-        movies = Movie.objects.all()
+        movies = Movie.objects.all().order_by("id")
+        result_page = self.paginate_queryset(movies, request)
 
-        serializer = MovieSerializer(movies, many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
-    
+        serializer = MovieSerializer(instance=result_page, many=True)
+        return self.get_paginated_response(serializer.data)
+       
     def post(self, request: Request) -> Response:
         serializer = MovieSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -42,22 +44,11 @@ class DetailMovieView(APIView):
 
     def delete(self, request: Request, movie_id: int) -> Response:
         movie = get_object_or_404(Movie, pk=movie_id)
-        # self.check_object_permissions(request, movie)
-
+       
         movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def patch(self, request: Request, movie_id: int) -> Response:
-        movie = get_object_or_404(Movie, pk=movie_id)
-        # self.check_object_permissions(request, movie)
-
-        serializer = MovieSerializer(Movie, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-        return Response(serializer.data, status.HTTP_200_OK)
     
-
 class MovieOrderView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]

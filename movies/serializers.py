@@ -16,14 +16,6 @@ class MovieSerializer(serializers.Serializer):
     def create(self, validated_data: dict) -> Movie:
         return Movie.objects.create(**validated_data)
     
-    def update(self, instance: Movie, validated_data: dict) -> Movie:
-        for key, value in validated_data.items():
-            setattr(instance, key, value)
-
-        instance.save()
-
-        return instance  
-    
 
 class MovieOrderSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
